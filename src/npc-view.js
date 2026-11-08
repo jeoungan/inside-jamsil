@@ -6,7 +6,7 @@ export function mountPatrol({model, scene, follow, release, download, notify, pr
   const panel = document.createElement('section'); panel.className = 'patrol-panel'; panel.setAttribute('aria-label', '자율 탐색 캐릭터');
   panel.innerHTML = `<details open><summary>탐색 대원 <span id="npc-status">대기</span></summary><p id="npc-mission">공개 통로와 계단으로 목적지를 순회합니다.</p><div class="patrol-actions"><button id="npc-start">순회 시작</button><button id="npc-eye" aria-pressed="false">대원 시점</button><button id="npc-export">기록 저장</button></div><small id="npc-stats">첫 출발지는 무작위 · 도착한 곳에서 다음 여정 시작</small><small id="npc-sensors"></small><p id="npc-feedback" role="status"></p></details>`;
   document.querySelector('#viewport').append(panel);
-  if(matchMedia('(max-width:700px)').matches)panel.querySelector('details').open=false;
+  if(document.documentElement.classList.contains('phone-layout')||matchMedia('(max-width:700px)').matches)panel.querySelector('details').open=false;
   const $ = s => panel.querySelector(s), sensors = createPatrolSensors(model);
   let worker, sequence = 0, workerPending = new Map(), patrol = null, following = false, timer = 0, lastRoute = null, lastVisualPose = '';
   const figure = new THREE.Group(); figure.name = 'public_patrol_character'; figure.visible = false; scene.add(figure);

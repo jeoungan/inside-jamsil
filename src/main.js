@@ -27,14 +27,10 @@ import {mountPatrol} from './npc-view.js';
 import {OUTFIELD_ACCESSES,OUTFIELD_REAR} from './outfield-access.js';
 import {mountSwipeWalking} from './swipe-walking.js';
 import {facilityIconSvg,facilityLabel} from './facility-icons.js';
+import {mountMobileOrientation} from './mobile-orientation.js';
 import './style.css';
 import './mobile-navigation.css';
-
-// Keep the destination sheet inside the visible screen when a phone keyboard opens.
-const syncAppHeight=()=>document.documentElement.style.setProperty('--app-height',`${window.visualViewport?.height??window.innerHeight}px`);
-syncAppHeight();
-window.visualViewport?.addEventListener('resize',syncAppHeight);
-window.addEventListener('resize',syncAppHeight);
+import './phone-landscape.css';
 
 const icons={cube:'<path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8M7.5 5.5l9 5"/>',layers:'<path d="m12 3 10 6-10 6L2 9zm-9 11 9 5 9-5M3 18l9 5 9-5"/>',door:'<path d="M5 21V3h14v18M9 3v18m6-10v2M3 21h18"/>',wc:'<circle cx="8" cy="5" r="2"/><path d="M6 20v-7H4V9h8v4h-2v7M17 3v18"/>',stairs:'<path d="M3 20h5v-5h5v-5h5V5h4M3 3l8 8M3 8V3h5"/>',shop:'<path d="M4 10v11h16V10M2 10l3-7h14l3 7M2 10h20M9 21v-7h6v7"/>',column:'<path d="M5 3h14v3H5zM8 6v12m8-12v12M5 18h14v3H5z"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',arrow:'<path d="M4 12h16m-6-6 6 6-6 6"/>',down:'<path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/>',eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',reset:'<path d="M3 10a9 9 0 1 1 2 8M3 3v7h7"/>',walk:'<circle cx="14" cy="4" r="2"/><path d="m7 12 3-5 4 2 4 3 3 0M10 7l1 8-5 6m5-6 4 1 2 5"/>',plan:'<path d="M3 3h18v18H3zM3 10h8V3m0 18v-7h10"/>',plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',play:'<path d="m8 4 12 8-12 8z"/>',pause:'<path d="M8 4v16M16 4v16"/>',link:'<path d="M9 5H4v15h15v-5M13 3h8v8m0-8L9 15"/>',check:'<path d="m4 12 5 5L20 6"/>',grid:'<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>'};
 const icon=(n)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]||icons.cube}</svg>`;
@@ -61,6 +57,7 @@ app.innerHTML=`
 </main><footer class="app-footer"><span>잠실야구장</span><span id="model-stats">공간 모델 준비 중</span><button id="export-data">배치 데이터 내려받기 ${icon('down')}</button></footer>
 <dialog id="source-dialog"><div class="dialog-head"><span class="eyebrow">모델 근거</span><button class="icon-btn" id="sources-close" aria-label="닫기">${icon('close')}</button></div><h2>이 공간을 만든 자료들.</h2><p class="dialog-intro">2026년 서울시 공사 도면의 건축 배경에 구단 안내도와 현장 사진을 대조했습니다. 전기공사 도면의 기존 시설명은 오래된 내용이 섞여 있어 현재 건축 실측도로 취급하지 않습니다.</p><div class="evidence-key"><span><b>도면 + 안내도</b> 외곽·구조축·화장실군·계단 위치</span><span><b>추정 상세</b> 층고·2.5/4층 연결·층별 시설 귀속·문 방향</span></div><div class="source-list">${[...SOURCES,...SEAT_SOURCES].map((s,i)=>`<a href="${s.url}" target="_blank" rel="noopener noreferrer"><span class="source-index">0${i+1}</span><div><strong>${s.title}</strong><p>${s.note}</p></div>${icon('link')}</a>`).join('')}</div><p class="source-foot">검토 ${META.reviewedAt} · 1 / 2 / 2.5 / 3 / 4층 분리 · 높이·중간층 연결 단면은 추정<br>이 모델의 이동은 공간 탐색용입니다. 실제 출입 가능 여부를 안내하지 않습니다.</p></dialog>`;
 
+const mobileOrientation=mountMobileOrientation(app);
 validateFeatures();
 const state={floor:'all',view:'orbit',filter:'all',search:'',explode:0,selected:null,touring:false,labels:true,layers:{columns:true,rooms:true,doors:true,stairs:true,seats:true,roof:true}};
 const $=(s)=>document.querySelector(s), $$=(s)=>[...document.querySelectorAll(s)];
@@ -219,17 +216,19 @@ renderer.domElement.addEventListener('pointerup',e=>{
 renderer.domElement.addEventListener('pointercancel',()=>{dragging=false;down=null;});window.addEventListener('pointerup',()=>dragging=false);
 function stopTour(){state.touring=false;updateTourButton();}
 window.addEventListener('keydown',e=>{
-  if(e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
+  if(mobileOrientation.blocked||e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
   if(e.code==='Escape'&&state.view==='walk'){setView('orbit');return;}
   if(state.view==='walk'&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'].includes(e.code)){e.preventDefault();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}stopTour();keys.add(e.code);}
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();dragging=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();dragging=false;}});
 swipeControls=mountSwipeWalking(renderer.domElement,{
-  enabled:()=>state.view==='walk'&&!patrolUI?.following,
+  enabled:()=>!mobileOrientation.blocked&&state.view==='walk'&&!patrolUI?.following,
   onBegin:()=>{stopTour();keys.clear();renderer.domElement.focus({preventScroll:true});},
   onMove:value=>swipeForward=value,
   onLook:(dx,dy)=>{yaw-=dx*.004;pitch=THREE.MathUtils.clamp(pitch-dy*.002,-1.1,1.1);},
 });
+window.addEventListener('inside:orientation-block',()=>{keys.clear();swipeControls.reset();dragging=false;down=null;stopTour();patrolUI?.pause();});
+window.addEventListener('inside:orientation-ready',()=>{resize();if(state.view!=='walk')resetCamera();});
 $$('[data-floor]').forEach(b=>b.onclick=()=>setFloor(b.dataset.floor));$$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $$('[data-layer]').forEach(input=>input.onchange=()=>{state.layers[input.dataset.layer]=input.checked;applyVisibility();});
 $('#layers-reset').onclick=()=>{$$('[data-layer]').forEach(i=>{i.checked=true;state.layers[i.dataset.layer]=i.checked;});applyVisibility();};
@@ -259,7 +258,7 @@ function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h
 new ResizeObserver(resize).observe(viewport);
 const projected=new THREE.Vector3();let frame=0,last=performance.now(),lastRender=0,lastPose='';
 function animate(now){
-  requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(document.hidden)return;
+  requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(document.hidden||mobileOrientation.blocked)return;
   if(transition){const t=Math.min((now-transition.start)/transition.duration,1),e=1-(1-t)**3;camera.position.lerpVectors(transition.from,transition.to,e);orbit.target.lerpVectors(transition.fromTarget,transition.toTarget,e);if(t===1)transition=null;}
   if(state.view==='walk'){if(!manualClock)stepWalk(dt);}else orbit.update();
   if(!manualClock)patrolUI?.update(dt);
@@ -277,7 +276,7 @@ routing=mountRouting({model,scene,getState:()=>state,getWalker:()=>walker,setFlo
   setFloor(seat.floor);const p=seat.chair,d=Math.hypot(p[0],p[2]+49);fly([p[0]-p[0]/d*14,p[1]+10,p[2]-(p[2]+49)/d*14],p,650);notify(seat.name+' · '+(seat.evidence==='observed'?'자료 번호 확인':'추정 좌석'));
 },startWalk:(route,automatic)=>{
   setView('walk');keys.clear();swipeControls.reset();const p=[walker.x,walker.y,walker.z],q=route.points.find(q=>Math.hypot(q[0]-p[0],q[2]-p[2])>.2)||route.points.at(-1);
-  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;tourPurpose='route';tourRoute=route.points;tourIndex=1;stalledTime=0;state.touring=automatic;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
+  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;tourPurpose='route';tourRoute=route.points;tourIndex=1;stalledTime=0;state.touring=automatic&&!mobileOrientation.blocked;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
 
 }});
 patrolUI=mountPatrol({model,scene,download,notify,prepare:()=>{stopTour();state.explode=0;$('#explode').value=0;$('#explode-output').value=0;if(patrolUI?.following)applyVisibility();else setFloor('all');},follow:(w,direction,lookPitch=-.08)=>{

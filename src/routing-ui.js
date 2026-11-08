@@ -16,7 +16,8 @@ export function mountRouting({model,scene,getState,getWalker,setFloor,startWalk,
   $('#viewport').insertAdjacentHTML('beforeend','<div id="route-guidance" hidden><span>길 안내</span><strong id="route-next"></strong><small id="route-remaining"></small><button id="route-recalculate" hidden>여기서 다시 안내</button></div>');
   inspector.insertAdjacentHTML('afterbegin','<button id="panel-toggle" class="panel-toggle" aria-expanded="false" aria-controls="navigation-panel"><span class="sheet-grip"></span><span><strong>어디로 갈까요?</strong><small id="panel-summary">현재 위치에서 길찾기</small></span><b aria-hidden="true">⌃</b></button>');
   inspector.id='navigation-panel';
-  const openPanel=open=>{inspector.classList.toggle('panel-open',open);$('#panel-toggle').setAttribute('aria-expanded',String(open));};
+  const openPanel=open=>{inspector.classList.toggle('panel-open',open);$('#panel-toggle').setAttribute('aria-expanded',String(open));$('#panel-toggle').setAttribute('aria-label',open?'목적지 패널 접기':'목적지 패널 열기');};
+  $('#panel-toggle').setAttribute('aria-label','목적지 패널 열기');
   $('#panel-toggle').onclick=()=>openPanel(!inspector.classList.contains('panel-open'));
   const tab=route=>{inspector.classList.toggle('route-mode',route);$('#route-tab').setAttribute('aria-pressed',route);$('#facilities-tab').setAttribute('aria-pressed',!route);};
   $('#route-tab').onclick=()=>tab(true);$('#facilities-tab').onclick=()=>tab(false);
