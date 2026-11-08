@@ -28,6 +28,7 @@ import {OUTFIELD_ACCESSES,OUTFIELD_REAR} from './outfield-access.js';
 import {mountSwipeWalking} from './swipe-walking.js';
 import {facilityIconSvg,facilityLabel} from './facility-icons.js';
 import {mountMobileOrientation} from './mobile-orientation.js';
+import {createCanvasInput} from './canvas-input.js';
 import './style.css';
 import './mobile-navigation.css';
 import './phone-landscape.css';
@@ -64,10 +65,12 @@ const $=(s)=>document.querySelector(s), $$=(s)=>[...document.querySelectorAll(s)
 const viewport=$('#canvas-wrap');let renderer;
 try { renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'}); } catch(error){$('#loading').innerHTML='<strong>3D 화면을 시작할 수 없습니다.</strong><p>WebGL을 지원하는 브라우저에서 다시 열어 주세요.</p>';throw error;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.98;viewport.appendChild(renderer.domElement);
-renderer.domElement.setAttribute('aria-label','3D 잠실야구장. 시설 선택, 마우스 드래그로 회전.');renderer.domElement.tabIndex=0;
+renderer.domElement.setAttribute('aria-label','3D 잠실야구장. 시설 선택, 드래그 회전, 두 손가락 확대. 내부 걷기에서는 화면 기준 위아래로 이동하고 좌우로 방향을 돌립니다.');renderer.domElement.tabIndex=0;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f0eb);scene.fog=new THREE.Fog(0xf0f0eb,560,1100);
 const perspective=new THREE.PerspectiveCamera(42,1,.15,1600), ortho=new THREE.OrthographicCamera(-190,190,180,-180,.1,1600);let camera=perspective;
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.08;orbit.minDistance=8;orbit.maxDistance=700;orbit.maxPolarAngle=Math.PI*.49;orbit.target.set(0,0,-5);
+const canvasInput=createCanvasInput(renderer.domElement,{isRotated:()=>mobileOrientation.rotated});
+const inputSurface=canvasInput.surface;
+const orbit=new OrbitControls(camera,inputSurface);orbit.enableDamping=true;orbit.dampingFactor=.08;orbit.minDistance=8;orbit.maxDistance=700;orbit.maxPolarAngle=Math.PI*.49;orbit.target.set(0,0,-5);
 scene.add(new THREE.HemisphereLight(0xffffff,0x969b91,1.7));
 const sun=new THREE.DirectionalLight(0xffffff,2.6);sun.position.set(-130,220,110);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-200,right:200,top:200,bottom:-200,near:1,far:650});sun.shadow.normalBias=.18;sun.shadow.bias=-.0002;scene.add(sun);
 const fill=new THREE.DirectionalLight(0xffffff,.8);fill.position.set(100,70,-140);scene.add(fill);
@@ -137,7 +140,7 @@ function setView(view,{patrolCamera=false}={}){
   if(view==='walk'){
     state.explode=0;$('#explode').value=0;$('#explode-output').value=0;
     camera=perspective;camera.fov=65;camera.updateProjectionMatrix();orbit.object=camera;orbit.enabled=false;transition=null;
-    if(!patrolCamera){drawWalkMap();syncWalker();notify(matchMedia('(pointer:coarse)').matches?'위·아래 스와이프로 이동하고, 좌·우로 방향을 돌리세요.':'현재 자리에서 이어 걷습니다. WASD로 이동하세요.');}
+    if(!patrolCamera){drawWalkMap();syncWalker();notify(matchMedia('(pointer:coarse)').matches?'화면 기준 위·아래로 밀어 이동하고, 좌·우로 방향을 돌리세요.':'현재 자리에서 이어 걷습니다. WASD로 이동하세요.');}
   }else{
     keys.clear();perspective.fov=42;perspective.updateProjectionMatrix();camera=view==='plan'?ortho:perspective;orbit.object=camera;orbit.enabled=true;orbit.enableRotate=view!=='plan';orbit.maxPolarAngle=view==='plan'?Math.PI:Math.PI*.49;
     $('#controls-help').innerHTML=view==='plan'?'드래그 이동 <i>·</i> 스크롤 확대':'드래그 회전 <i>·</i> 스크롤 확대 <i>·</i> 우클릭 이동';
@@ -204,31 +207,31 @@ function selectFeature(id){
   updateHighlight();renderList();
   if(state.view!=='walk'){const target=new THREE.Vector3(f.x,floorHeight(state.floor==='all'?f.floor:state.floor)+1,f.z),offset=camera.position.clone().sub(orbit.target).normalize().multiplyScalar(state.view==='plan'?260:125);fly(target.clone().add(offset).toArray(),target.toArray());}
 }
-let down=null,dragging=false;
-renderer.domElement.addEventListener('pointerdown',e=>{if(state.view==='walk'&&e.pointerType!=='mouse')return;down={x:e.clientX,y:e.clientY};dragging=true;if(state.view==='walk')renderer.domElement.setPointerCapture(e.pointerId);});
-renderer.domElement.addEventListener('pointermove',e=>{if(state.view==='walk'&&e.pointerType!=='mouse')return;if(state.view==='walk'&&dragging){if(patrolUI?.following){npcLookYaw-=e.movementX*.003;npcLookPitch=THREE.MathUtils.clamp(npcLookPitch-e.movementY*.003,-1.1,1.1);}else{yaw-=e.movementX*.003;pitch=THREE.MathUtils.clamp(pitch-e.movementY*.003,-1.2,1.2);}}});
-renderer.domElement.addEventListener('pointerup',e=>{
-  dragging=false;if(!down)return;const distance=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;if(distance>5||state.view==='walk')return;
-  const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
+let down=null,dragging=false;const pickPointers=new Set();
+inputSurface.addEventListener('pointerdown',e=>{if(state.view==='walk'&&e.pointerType!=='mouse')return;pickPointers.add(e.pointerId);down=pickPointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;dragging=true;if(state.view==='walk')renderer.domElement.setPointerCapture(e.pointerId);});
+inputSurface.addEventListener('pointermove',e=>{if(down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down=null;if(state.view==='walk'&&e.pointerType!=='mouse')return;if(state.view==='walk'&&dragging){if(patrolUI?.following){npcLookYaw-=e.movementX*.003;npcLookPitch=THREE.MathUtils.clamp(npcLookPitch-e.movementY*.003,-1.1,1.1);}else{yaw-=e.movementX*.003;pitch=THREE.MathUtils.clamp(pitch-e.movementY*.003,-1.2,1.2);}}});
+inputSurface.addEventListener('pointerup',e=>{
+  dragging=false;pickPointers.delete(e.pointerId);if(!down||down.id!==e.pointerId)return;const distance=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;if(distance>5||state.view==='walk')return;
+  const rect=inputSurface.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
   const hits=raycaster.intersectObjects(model.pickables).filter(hit=>{let o=hit.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});
   for(const hit of hits){if(hit.object.userData.addresses&&hit.instanceId!==undefined){routing.selectSeat(hit.object.userData.addresses[hit.instanceId]);break;}let o=hit.object;while(o&&!o.userData.featureId)o=o.parent;if(o){selectFeature(o.userData.featureId);break;}}
 });
-renderer.domElement.addEventListener('pointercancel',()=>{dragging=false;down=null;});window.addEventListener('pointerup',()=>dragging=false);
+inputSurface.addEventListener('pointercancel',e=>{pickPointers.delete(e.pointerId);dragging=false;down=null;});window.addEventListener('pointerup',()=>dragging=false);
 function stopTour(){state.touring=false;updateTourButton();}
 window.addEventListener('keydown',e=>{
-  if(mobileOrientation.blocked||e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
+  if(e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
   if(e.code==='Escape'&&state.view==='walk'){setView('orbit');return;}
   if(state.view==='walk'&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'].includes(e.code)){e.preventDefault();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}stopTour();keys.add(e.code);}
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();dragging=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();dragging=false;}});
-swipeControls=mountSwipeWalking(renderer.domElement,{
-  enabled:()=>!mobileOrientation.blocked&&state.view==='walk'&&!patrolUI?.following,
+swipeControls=mountSwipeWalking(inputSurface,{
+  enabled:()=>state.view==='walk'&&!patrolUI?.following,
   onBegin:()=>{stopTour();keys.clear();renderer.domElement.focus({preventScroll:true});},
   onMove:value=>swipeForward=value,
   onLook:(dx,dy)=>{yaw-=dx*.004;pitch=THREE.MathUtils.clamp(pitch-dy*.002,-1.1,1.1);},
 });
-window.addEventListener('inside:orientation-block',()=>{keys.clear();swipeControls.reset();dragging=false;down=null;stopTour();patrolUI?.pause();});
-window.addEventListener('inside:orientation-ready',()=>{resize();if(state.view!=='walk')resetCamera();});
+window.addEventListener('inside:layout-changing',e=>{canvasInput.cancelPointers();keys.clear();swipeControls.reset();dragging=false;down=null;pickPointers.clear();if(e.detail.orientationChanged){stopTour();patrolUI?.pause();}});
+window.addEventListener('inside:layout-ready',()=>resize());
 $$('[data-floor]').forEach(b=>b.onclick=()=>setFloor(b.dataset.floor));$$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $$('[data-layer]').forEach(input=>input.onchange=()=>{state.layers[input.dataset.layer]=input.checked;applyVisibility();});
 $('#layers-reset').onclick=()=>{$$('[data-layer]').forEach(i=>{i.checked=true;state.layers[i.dataset.layer]=i.checked;});applyVisibility();};
@@ -258,7 +261,7 @@ function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h
 new ResizeObserver(resize).observe(viewport);
 const projected=new THREE.Vector3();let frame=0,last=performance.now(),lastRender=0,lastPose='';
 function animate(now){
-  requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(document.hidden||mobileOrientation.blocked)return;
+  requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(document.hidden)return;
   if(transition){const t=Math.min((now-transition.start)/transition.duration,1),e=1-(1-t)**3;camera.position.lerpVectors(transition.from,transition.to,e);orbit.target.lerpVectors(transition.fromTarget,transition.toTarget,e);if(t===1)transition=null;}
   if(state.view==='walk'){if(!manualClock)stepWalk(dt);}else orbit.update();
   if(!manualClock)patrolUI?.update(dt);
@@ -276,7 +279,7 @@ routing=mountRouting({model,scene,getState:()=>state,getWalker:()=>walker,setFlo
   setFloor(seat.floor);const p=seat.chair,d=Math.hypot(p[0],p[2]+49);fly([p[0]-p[0]/d*14,p[1]+10,p[2]-(p[2]+49)/d*14],p,650);notify(seat.name+' · '+(seat.evidence==='observed'?'자료 번호 확인':'추정 좌석'));
 },startWalk:(route,automatic)=>{
   setView('walk');keys.clear();swipeControls.reset();const p=[walker.x,walker.y,walker.z],q=route.points.find(q=>Math.hypot(q[0]-p[0],q[2]-p[2])>.2)||route.points.at(-1);
-  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;tourPurpose='route';tourRoute=route.points;tourIndex=1;stalledTime=0;state.touring=automatic&&!mobileOrientation.blocked;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
+  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;tourPurpose='route';tourRoute=route.points;tourIndex=1;stalledTime=0;state.touring=automatic;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
 
 }});
 patrolUI=mountPatrol({model,scene,download,notify,prepare:()=>{stopTour();state.explode=0;$('#explode').value=0;$('#explode-output').value=0;if(patrolUI?.following)applyVisibility();else setFloor('all');},follow:(w,direction,lookPitch=-.08)=>{
