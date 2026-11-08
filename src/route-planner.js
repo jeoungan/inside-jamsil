@@ -8,6 +8,7 @@ import {upperGalleryLegs} from './upper-gallery.js';
 import {navyFrontLegs} from './navy-front-gallery.js';
 import {galleryLegs} from './outfield-gallery.js';
 import {planFromCurrentPosition} from './current-position-route.js';
+import {createClearanceCost} from './route-clearance.js';
 
 export const ORIGINS=FEATURES.filter(f=>f.type==='gate').map(f=>({...f,kind:'entrance'}));
 export const DESTINATIONS=[
@@ -43,6 +44,7 @@ export function resolveAnchor(feature,colliders){
 }
 
 export function createRoutePlanner(colliders){
+  const comfort=new Map(FLOORS.map(f=>[f.id,createClearanceCost(colliders.filter(c=>(!c.floor||c.floor===f.id)&&colliderOccupiesHeight(c,f.y)))]));
   const portals=CONNECTORS.flatMap(c=>{const path=connectorRoute(c);return [{id:c.id+':from',floor:c.from,point:path[0],connector:c.id},{id:c.id+':to',floor:c.to,point:path.at(-1),connector:c.id}];});
   const cache=new Map();
   function plan(from,to,options={}){
@@ -93,14 +95,14 @@ export function createRoutePlanner(colliders){
       const chain=[];for(let at=goal;at!==0;){const p=prev.get(at);chain.unshift({edge:p.e,from:p.at%count,to:at%count});at=p.at;}
       const pending=chain.find(p=>!p.edge.path);
       if(pending){const e=pending.edge,a=nodes[e.a],b=nodes[e.b];
-        try{e.path=findFloorRoute(a.point,b.point,a.floor,colliders);e.weight=length(e.path);}catch{e.weight=Infinity;}
+        try{e.path=findFloorRoute(a.point,b.point,a.floor,colliders,comfort.get(a.floor));e.weight=comfort.get(a.floor).path(e.path);}catch{e.weight=Infinity;}
         cache.set(key(a,b),{path:e.path,weight:e.weight});continue;
       }
       const legs=[];
-      for(const {edge,from,to}of chain){const leg={kind:edge.kind,connector:edge.connector,floor:nodes[from].floor,toFloor:nodes[to].floor,points:from===edge.a?edge.path:edge.path.toReversed(),distance:edge.weight},prev=legs.at(-1);
+      for(const {edge,from,to}of chain){const leg={kind:edge.kind,connector:edge.connector,floor:nodes[from].floor,toFloor:nodes[to].floor,points:from===edge.a?edge.path:edge.path.toReversed(),distance:length(edge.path)},prev=legs.at(-1);
         if(prev?.kind==='floor'&&leg.kind==='floor'&&prev.floor===leg.floor){prev.points.push(...leg.points.slice(1));prev.distance+=leg.distance;}else legs.push({...leg,points:[...leg.points]});
       }
-      return {origin,destination,legs,points:legs.flatMap((l,i)=>i?l.points.slice(1):l.points),distance:legs.reduce((s,l)=>s+l.distance,0),transfers:legs.filter(l=>l.connector).length,estimated:true};
+      return {origin,destination,legs,points:legs.flatMap((l,i)=>i?l.points.slice(1):l.points),distance:legs.reduce((s,l)=>s+l.distance,0),routingCost:chain.reduce((sum,p)=>sum+p.edge.weight,0),transfers:legs.filter(l=>l.connector).length,estimated:true};
     }
     throw Error('경로 계산 범위를 초과했습니다. 더 가까운 출입구를 선택해 주세요.');
   }

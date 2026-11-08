@@ -14,9 +14,9 @@ export function mountRouting({model,scene,getState,getWalker,setFloor,startWalk,
   inspector.classList.add('route-mode');
   inspector.insertAdjacentHTML('afterbegin',`<div class="inspector-tabs" role="group" aria-label="탐색 패널"><button id="route-tab" aria-pressed="true">길찾기</button><button id="facilities-tab" aria-pressed="false">시설 목록</button></div><section class="routing" aria-label="현재 위치에서 목적지까지 길찾기"><div class="route-heading"><span class="eyebrow">목적지 길찾기</span><h2>어디로 갈까요?</h2></div><form id="route-form"><div class="route-origin"><span class="origin-pin" aria-hidden="true">↗</span><div><strong>현재 위치에서 출발</strong><small id="route-origin-location">지금 서 있는 자리에서 바로 안내합니다.</small></div></div><label>목적지<input id="route-search" type="search" placeholder="207, 화장실, 상부 좌석 검색" aria-label="길찾기 목적지 검색"/><select id="route-to" aria-label="길찾기 목적지"></select></label><div class="route-actions"><button type="submit" class="btn primary" id="route-find">길 안내 시작</button><button type="button" class="btn" id="route-clear">지우기</button></div></form><p class="route-note">좌석은 구역 진입부까지 안내합니다.<br>실제 현장 동선은 미검증인 연구 모델입니다.</p><div id="route-result" role="status" aria-live="polite">목적지만 선택하면 현재 위치에서 안내합니다.</div><div class="route-walk-actions" hidden><button class="btn primary" id="route-walk">직접 걷기</button><button class="btn" id="route-follow">자동으로 따라가기</button></div><ol id="route-steps" aria-label="층별 이동 순서"></ol></section>`);
   $('#viewport').insertAdjacentHTML('beforeend','<div id="route-guidance" hidden><span>길 안내</span><strong id="route-next"></strong><small id="route-remaining"></small><button id="route-recalculate" hidden>여기서 다시 안내</button></div>');
-  inspector.insertAdjacentHTML('afterbegin','<button id="panel-toggle" class="panel-toggle" aria-expanded="false" aria-controls="navigation-panel"><span class="sheet-grip"></span><span><strong>어디로 갈까요?</strong><small id="panel-summary">현재 위치에서 길찾기</small></span><b aria-hidden="true">⌃</b></button>');
+  inspector.insertAdjacentHTML('afterbegin','<button id="panel-toggle" class="panel-toggle" aria-expanded="false" aria-controls="navigation-panel"><span class="sheet-grip"></span><span><strong>목적지 선택</strong><small id="panel-summary">현재 위치에서 길찾기</small></span><b aria-hidden="true">⌃</b></button>');
   inspector.id='navigation-panel';
-  const openPanel=open=>{inspector.classList.toggle('panel-open',open);$('#panel-toggle').setAttribute('aria-expanded',String(open));$('#panel-toggle').setAttribute('aria-label',open?'목적지 패널 접기':'목적지 패널 열기');};
+  const openPanel=open=>{if(inspector.classList.contains('panel-open')!==open)window.dispatchEvent(new CustomEvent('inside:layout-changing',{detail:{orientationChanged:false}}));inspector.classList.toggle('panel-open',open);$('#panel-toggle').setAttribute('aria-expanded',String(open));$('#panel-toggle').setAttribute('aria-label',open?'목적지 패널 접기':'목적지 패널 열기');};
   $('#panel-toggle').setAttribute('aria-label','목적지 패널 열기');
   $('#panel-toggle').onclick=()=>openPanel(!inspector.classList.contains('panel-open'));
   const tab=route=>{inspector.classList.toggle('route-mode',route);$('#route-tab').setAttribute('aria-pressed',route);$('#facilities-tab').setAttribute('aria-pressed',!route);};
@@ -32,17 +32,18 @@ export function mountRouting({model,scene,getState,getWalker,setFloor,startWalk,
   options();$('#route-to').value='section-207';$('#route-search').oninput=options;
   let route=null,progress=null,requestId=0,worker=null,workerBusy=false,lastUpdate=0,arrivalNotified=false,seatInput=null;
   const group=new THREE.Group();group.name='wayfinding_overlay';scene.add(group);
-  const material=new THREE.MeshBasicMaterial({color:0xd68a36,side:THREE.DoubleSide,depthTest:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  const edgeMaterial=new THREE.MeshBasicMaterial({color:0xfff7df,side:THREE.DoubleSide,depthTest:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+  const material=new THREE.MeshBasicMaterial({color:0xffad16,toneMapped:false,side:THREE.DoubleSide,depthTest:true,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
+  const edgeMaterial=new THREE.MeshBasicMaterial({color:0xfffbe8,toneMapped:false,side:THREE.DoubleSide,depthTest:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const outlineMaterial=new THREE.MeshBasicMaterial({color:0x594121,toneMapped:false,side:THREE.DoubleSide,depthTest:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   function disposePath(){scene.userData.renderDirty=true;for(const child of [...group.children]){child.traverse(o=>o.geometry?.dispose());group.remove(child);}}
   function draw(){
     disposePath();if(!route)return;
     const surface=createPaintSurfaceSampler(model.root);
     for(const leg of route.legs){
       const g=new THREE.Group();g.userData={floor:leg.floor,toFloor:leg.toFloor};group.add(g);
-      const width=leg.kind?.startsWith('seat-')?.28:.62;
-      const edge=createGuidanceLine(leg.points,width+.09,edgeMaterial,surface),paint=createGuidanceLine(leg.points,width,material,surface);
-      if(edge)g.add(edge);if(paint){paint.position.y=.004;paint.renderOrder=13;g.add(paint);}
+      const width=leg.kind?.startsWith('seat-')?.32:leg.kind==='stair'?.8:.72;
+      const outline=createGuidanceLine(leg.points,width+.18,outlineMaterial,surface),edge=createGuidanceLine(leg.points,width+.1,edgeMaterial,surface),paint=createGuidanceLine(leg.points,width,material,surface);
+      if(outline)g.add(outline);if(edge){edge.position.y=.003;edge.renderOrder=13;g.add(edge);}if(paint){paint.position.y=.006;paint.renderOrder=14;g.add(paint);}
     }
     visibility();
   }
@@ -105,5 +106,5 @@ export function mountRouting({model,scene,getState,getWalker,setFloor,startWalk,
     overlay.innerHTML=route.legs.filter(l=>l.floor===getWalker().floor||l.toFloor===getWalker().floor).map(l=>`<polyline points="${l.points.map(p=>p[0]+','+p[2]).join(' ')}"/>`).join('');visibility();
   }
   function selectFeature(f){if(ROUTE_TARGETS.some(d=>d.id===f.id)){seatInput.showFacilities();$('#route-search').value='';options();$('#route-to').value=f.id;preview();invalidate();tab(true);openPanel(true);}}
-  return {visibility,update,selectFeature,selectSeat:address=>{tab(true);seatInput.select(address);openPanel(true);},showFacilities:()=>{tab(false);openPanel(true);},clear,get planning(){return workerBusy;},get route(){return route;},textState:()=>route?{destination:route.destination.id,distance:Math.round(route.distance),transfers:route.transfers,remaining:progress?Math.round(progress.remaining):null,arrived:progress?.arrived??false,offRoute:progress?.offRoute??false}:null};
+  return {visibility,update,selectFeature,closePanel:()=>openPanel(false),selectSeat:address=>{tab(true);seatInput.select(address);openPanel(true);},showFacilities:()=>{tab(false);openPanel(true);},clear,get planning(){return workerBusy;},get route(){return route;},textState:()=>route?{destination:route.destination.id,distance:Math.round(route.distance),transfers:route.transfers,remaining:progress?Math.round(progress.remaining):null,arrived:progress?.arrived??false,offRoute:progress?.offRoute??false}:null};
 }

@@ -61,7 +61,7 @@ export function planFromCurrentPosition(from,to,{plan,colliders,options}){
   const exact=w=>({...w,kind:'walk-position',name:'현재 위치'});
   const combine=(prefix,base)=>{
     const legs=[{...prefix,distance:length(prefix.points)},...base.legs];
-    return {...base,origin,legs,points:legs.flatMap((l,i)=>i?l.points.slice(1):l.points),distance:legs.reduce((s,l)=>s+l.distance,0),transfers:legs.filter(l=>l.connector).length};
+    return {...base,origin,legs,points:legs.flatMap((l,i)=>i?l.points.slice(1):l.points),distance:legs.reduce((s,l)=>s+l.distance,0),routingCost:(base.routingCost??base.distance)+length(prefix.points),transfers:legs.filter(l=>l.connector).length};
   };
   if(from.connector){
     const c=CONNECTORS.find(c=>c.id===from.connector);
@@ -80,7 +80,7 @@ export function planFromCurrentPosition(from,to,{plan,colliders,options}){
       }catch{/* Try the other physical end without relocating the body. */}
     }
     if(!candidates.length)throw Error('현재 연결로에서 목적지로 이어지는 공개 경로를 찾지 못했습니다.');
-    return candidates.sort((a,b)=>a.distance-b.distance)[0];
+    return candidates.sort((a,b)=>(a.routingCost??a.distance)-(b.routingCost??b.distance))[0];
   }
   if(from.seating){
     if(!options.requireStairs&&to.kind==='individual-seat'&&to.section===from.seating&&canFollow(from,[point(from),to.point],colliders)){

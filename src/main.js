@@ -83,7 +83,7 @@ const labelNodes=new Map();
 for(const f of FEATURES.filter(f=>f.type!=='shop')){const el=document.createElement('button');el.className='map-label '+f.type;el.innerHTML=facilityLabel(f,f.type==='gate'?f.name.replace('GATE ','G '):f.type==='restroom'?'화장실':['stair','ramp'].includes(f.type)?'↗':f.name.split('구역')[0]);el.title=f.name;el.setAttribute('aria-label',f.name);el.addEventListener('click',()=>selectFeature(f.id));$('#labels').append(el);labelNodes.set(f.id,el);}
 let transition=null, toastTimer, yaw=0,pitch=0,tourT=.88,routing=null,tourPurpose='full',patrolUI=null;
 const initialPath=connectorRoute(defaultConnector('2F'));
-let walker=createWalker('2F',initialPath[0][0],initialPath[0][2]),swipeForward=0,swipeControls=null,manualClock=false,tourRoute=[],tourIndex=0,npcLookYaw=0,npcLookPitch=0;
+let walker=createWalker('2F',initialPath[0][0],initialPath[0][2]),swipeForward=0,swipeSide=0,swipeControls=null,manualClock=false,tourRoute=[],tourIndex=0,npcLookYaw=0,npcLookPitch=0;
 const keys=new Set();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function notify(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3200);}
@@ -138,9 +138,10 @@ function setView(view,{patrolCamera=false}={}){
   $$('.view-modes button').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);b.setAttribute('aria-pressed',b.dataset.view===view);});
   $('#viewport').classList.toggle('walking',view==='walk');
   if(view==='walk'){
+    routing?.closePanel();
     state.explode=0;$('#explode').value=0;$('#explode-output').value=0;
     camera=perspective;camera.fov=65;camera.updateProjectionMatrix();orbit.object=camera;orbit.enabled=false;transition=null;
-    if(!patrolCamera){drawWalkMap();syncWalker();notify(matchMedia('(pointer:coarse)').matches?'화면 기준 위·아래로 밀어 이동하고, 좌·우로 방향을 돌리세요.':'현재 자리에서 이어 걷습니다. WASD로 이동하세요.');}
+    if(!patrolCamera){drawWalkMap();syncWalker();notify(matchMedia('(pointer:coarse)').matches?'왼쪽은 이동, 오른쪽은 시점 조절 · 두 손가락을 함께 사용할 수 있어요.':'현재 자리에서 이어 걷습니다. WASD로 이동하세요.');}
   }else{
     keys.clear();perspective.fov=42;perspective.updateProjectionMatrix();camera=view==='plan'?ortho:perspective;orbit.object=camera;orbit.enabled=true;orbit.enableRotate=view!=='plan';orbit.maxPolarAngle=view==='plan'?Math.PI:Math.PI*.49;
     $('#controls-help').innerHTML=view==='plan'?'드래그 이동 <i>·</i> 스크롤 확대':'드래그 회전 <i>·</i> 스크롤 확대 <i>·</i> 우클릭 이동';
@@ -178,7 +179,7 @@ function stepWalk(dt){
       }
     }
   }else{
-    const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)+swipeForward,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),speed=(keys.has('ShiftLeft')?10:4.5)*dt/Math.max(1,Math.hypot(forward,side));
+    const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)+swipeForward,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+swipeSide,speed=(keys.has('ShiftLeft')?10:4.5)*dt/Math.max(1,Math.hypot(forward,side));
     walker=moveWalker(walker,(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed,(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed,model.colliders);
   }
   syncWalker();
@@ -224,11 +225,19 @@ window.addEventListener('keydown',e=>{
   if(state.view==='walk'&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'].includes(e.code)){e.preventDefault();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}stopTour();keys.add(e.code);}
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();dragging=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();dragging=false;}});
+$('#walk-hud').insertAdjacentHTML('beforeend','<div id="walk-touch-controls" aria-hidden="true"><span class="touch-half-hint touch-left-hint">왼쪽 · 이동</span><span class="touch-half-hint touch-right-hint">오른쪽 · 시점</span><span id="move-stick" hidden><i></i></span><span id="look-stick" hidden></span></div>');
+$('.touch-walk-help').innerHTML='왼쪽 화면으로 이동 · 오른쪽 화면으로 둘러보기<br>두 손가락으로 동시에 조작 · 손을 떼면 정지';
+$$('.view-modes button').forEach(b=>b.setAttribute('aria-label',b.textContent.trim()));
 swipeControls=mountSwipeWalking(inputSurface,{
   enabled:()=>state.view==='walk'&&!patrolUI?.following,
   onBegin:()=>{stopTour();keys.clear();renderer.domElement.focus({preventScroll:true});},
-  onMove:value=>swipeForward=value,
+  onMove:({forward,side})=>{swipeForward=forward;swipeSide=side;},
   onLook:(dx,dy)=>{yaw-=dx*.004;pitch=THREE.MathUtils.clamp(pitch-dy*.002,-1.1,1.1);},
+  onState:({move,look})=>{
+    for(const [id,p]of [['move-stick',move],['look-stick',look]]){const el=$('#'+id);el.hidden=!p;if(p){el.style.left=p.x+'px';el.style.top=p.y+'px';}}
+    if(move)$('#move-stick i').style.transform=`translate(${move.dx}px,${move.dy}px)`;
+    $('#walk-touch-controls').classList.toggle('touch-active',!!move||!!look);
+  },
 });
 window.addEventListener('inside:layout-changing',e=>{canvasInput.cancelPointers();keys.clear();swipeControls.reset();dragging=false;down=null;pickPointers.clear();if(e.detail.orientationChanged){stopTour();patrolUI?.pause();}});
 window.addEventListener('inside:layout-ready',()=>resize());
