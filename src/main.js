@@ -29,6 +29,7 @@ import {mountSwipeWalking} from './swipe-walking.js';
 import {facilityIconSvg,facilityLabel} from './facility-icons.js';
 import {mountMobileOrientation} from './mobile-orientation.js';
 import {createCanvasInput} from './canvas-input.js';
+import {START_LOCATIONS,startingPosition} from './starting-position.js';
 import './style.css';
 import './mobile-navigation.css';
 import './phone-landscape.css';
@@ -65,7 +66,7 @@ const $=(s)=>document.querySelector(s), $$=(s)=>[...document.querySelectorAll(s)
 const viewport=$('#canvas-wrap');let renderer;
 try { renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'}); } catch(error){$('#loading').innerHTML='<strong>3D 화면을 시작할 수 없습니다.</strong><p>WebGL을 지원하는 브라우저에서 다시 열어 주세요.</p>';throw error;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.98;viewport.appendChild(renderer.domElement);
-renderer.domElement.setAttribute('aria-label','3D 잠실야구장. 시설 선택, 드래그 회전, 두 손가락 확대. 내부 걷기에서는 화면 기준 위아래로 이동하고 좌우로 방향을 돌립니다.');renderer.domElement.tabIndex=0;
+renderer.domElement.setAttribute('aria-label','3D 잠실야구장. 시설 선택, 드래그 회전, 두 손가락 확대. 내부 걷기에서는 왼쪽 화면으로 이동하고 오른쪽 화면으로 시점을 조절합니다.');renderer.domElement.tabIndex=0;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f0eb);scene.fog=new THREE.Fog(0xf0f0eb,560,1100);
 const perspective=new THREE.PerspectiveCamera(42,1,.15,1600), ortho=new THREE.OrthographicCamera(-190,190,180,-180,.1,1600);let camera=perspective;
 const canvasInput=createCanvasInput(renderer.domElement,{isRotated:()=>mobileOrientation.rotated});
@@ -205,6 +206,10 @@ function selectFeature(id){
     $('#selection').insertAdjacentHTML('beforeend',`<button class="focus-btn" id="route-selection">${icon('arrow')} 이곳으로 길찾기</button>`);
     $('#route-selection').onclick=()=>routing.selectFeature(f);
   }
+  if(START_LOCATIONS.some(location=>location.id===f.id)){
+    $('#selection').insertAdjacentHTML('beforeend',`<button class="focus-btn" id="start-selection">${icon('walk')} 여기서 출발</button>`);
+    $('#start-selection').onclick=()=>routing.selectOrigin(f.id);
+  }
   updateHighlight();renderList();
   if(state.view!=='walk'){const target=new THREE.Vector3(f.x,floorHeight(state.floor==='all'?f.floor:state.floor)+1,f.z),offset=camera.position.clone().sub(orbit.target).normalize().multiplyScalar(state.view==='plan'?260:125);fly(target.clone().add(offset).toArray(),target.toArray());}
 }
@@ -284,11 +289,14 @@ function animate(now){
     }
   }
 }
-routing=mountRouting({model,scene,getState:()=>state,getWalker:()=>walker,setFloor,notify,cancelWalking:stopTour,prepareRouting:()=>{stopTour();keys.clear();swipeControls.reset();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}state.explode=0;$('#explode').value=0;$('#explode-output').value=0;applyVisibility();},focusSeat:seat=>{
-  setFloor(seat.floor);const p=seat.chair,d=Math.hypot(p[0],p[2]+49);fly([p[0]-p[0]/d*14,p[1]+10,p[2]-(p[2]+49)/d*14],p,650);notify(seat.name+' · '+(seat.evidence==='observed'?'자료 번호 확인':'추정 좌석'));
-},startWalk:(route,automatic)=>{
+routing=mountRouting({model,scene,getState:()=>state,getWalker:()=>walker,notify,cancelWalking:stopTour,prepareRouting:()=>{stopTour();keys.clear();swipeControls.reset();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}state.explode=0;$('#explode').value=0;$('#explode-output').value=0;applyVisibility();},setStartLocation:id=>{
+  const start=startingPosition(id,model.colliders);
+  stopTour();keys.clear();swipeControls.reset();patrolUI?.pause();patrolUI?.detach();
+  walker=start.walker;yaw=start.yaw;pitch=-.08;clearSelection();setView('walk');
+  notify(start.feature.name+'에서 출발합니다.');return {...walker};
+},startWalk:route=>{
   setView('walk');keys.clear();swipeControls.reset();const p=[walker.x,walker.y,walker.z],q=route.points.find(q=>Math.hypot(q[0]-p[0],q[2]-p[2])>.2)||route.points.at(-1);
-  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;tourPurpose='route';tourRoute=route.points;tourIndex=1;stalledTime=0;state.touring=automatic;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
+  walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;state.touring=false;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
 
 }});
 patrolUI=mountPatrol({model,scene,download,notify,prepare:()=>{stopTour();state.explode=0;$('#explode').value=0;$('#explode-output').value=0;if(patrolUI?.following)applyVisibility();else setFloor('all');},follow:(w,direction,lookPitch=-.08)=>{

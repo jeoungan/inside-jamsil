@@ -1,4 +1,4 @@
-.route-origin{display:flex;align-items:center;gap:12px;padding:13px 12px;margin-bottom:18px;border:1px solid #dce4d4;border-radius:10px;background:#eef3e8}
+.route-origin{display:flex;align-items:center;gap:12px;padding:0;margin-bottom:18px;border:0;border-radius:10px}.route-origin>label{width:100%}.field-optional{font-size:10px;color:#8a947e;font-weight:400}#route-result:empty{display:none}
 .origin-pin{font-size:24px;color:#5a714a}.route-origin strong,.route-origin small{display:block}.route-origin strong{font-size:12px;color:#3b4f30}.route-origin small{font-size:10px;color:#79856e;margin-top:5px}
 .panel-toggle,.touch-walk-help{display:none}
 .walking .patrol-panel{display:none}.npc-following .patrol-panel{display:block}

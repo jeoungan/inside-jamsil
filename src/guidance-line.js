@@ -48,7 +48,10 @@ export function createPaintSurfaceSampler(root){
     const key=[x,y,z].map(n=>n.toFixed(3)).join(',');if(cache.has(key))return cache.get(key);
     const nearby=objects.filter(({box:b})=>x>=b.min.x&&x<=b.max.x&&z>=b.min.z&&z<=b.max.z&&y+.3>=b.min.y&&y-.3<=b.max.y).map(o=>o.mesh);
     ray.set(new THREE.Vector3(x,y+.31,z),down);ray.far=.65;
-    const hit=ray.intersectObjects(nearby,false).find(h=>h.face.normal.clone().transformDirection(h.object.matrixWorld).y>.4);
+    // Double-sided aisle slabs can have reversed triangle winding. The first
+    // near-horizontal hit from above is their top, regardless of normal sign.
+    // Positive-normal filtering selected their underside, 14cm below the top.
+    const hit=ray.intersectObjects(nearby,false).find(h=>Math.abs(h.face.normal.clone().transformDirection(h.object.matrixWorld).y)>.4);
     const height=hit?.point.y??y;cache.set(key,height);return height;
   };
 }
