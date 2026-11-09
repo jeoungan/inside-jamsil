@@ -23,7 +23,6 @@ import {ORIGINS,DESTINATIONS} from './route-planner.js';
 import {BASE_REGIONS} from './access-geometry.js';
 import {SEAT_BLOCKS,SEAT_BLOCK_BY_ID,SEAT_SOURCES,SEAT_STATS} from './seat-data.js';
 import {UNLOCATED_AMENITIES,AMENITY_REVIEWED_AT} from './amenity-catalogue.js';
-import {mountPatrol} from './npc-view.js';
 import {OUTFIELD_ACCESSES,OUTFIELD_REAR} from './outfield-access.js';
 import {mountSwipeWalking} from './swipe-walking.js';
 import {facilityIconSvg,facilityLabel} from './facility-icons.js';
@@ -48,7 +47,6 @@ app.innerHTML=`
 <div class="sidebar-bottom"><div class="status-dot"></div><span>공사 도면 · 안내도 대조</span><button id="notes-open" aria-label="정확도 안내">${icon('info')}</button><p>구조축·계단 위치 반영 / 높이는 추정</p></div></aside>
 <section class="viewport" id="viewport" aria-label="잠실야구장 인터랙티브 3D 모델"><div id="canvas-wrap"></div><div id="labels"></div><div class="view-title"><span class="eyebrow" id="view-code">2층 / 회랑</span><h2 id="view-name">2층 내부 회랑</h2><p id="view-subtitle">출입구와 편의시설, 그 사이의 공간</p></div>
 <div class="view-modes" role="group" aria-label="카메라 모드"><button data-view="orbit" class="active" aria-pressed="true">${icon('cube')}<span>3D 보기</span></button><button data-view="plan" aria-pressed="false">${icon('plan')}<span>평면 보기</span></button><button data-view="walk" aria-pressed="false">${icon('walk')}<span>내부 걷기</span></button></div>
-<div class="compass"><span>외야</span><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="25"/><path d="m30 11 6 20-6-4-6 4z"/></svg><small>도면 위쪽</small></div>
 <div class="zoom-controls"><button id="zoom-in" title="확대" aria-label="확대">${icon('plus')}</button><button id="zoom-out" title="축소" aria-label="축소">${icon('minus')}</button><button id="camera-reset" title="시점 초기화" aria-label="시점 초기화">${icon('reset')}</button></div>
 <div class="bottom-tools"><div class="explode-control"><span>${icon('layers')} 층 분리</span><input id="explode" type="range" min="0" max="28" step="1" value="0" aria-label="층 분리 간격"/><output id="explode-output">0</output></div><button class="btn" id="tour">${icon('play')}<span>전 층 이어 걷기</span></button></div>
 <div class="canvas-footer"><span id="controls-help">드래그 회전 <i>·</i> 스크롤 확대 <i>·</i> 우클릭 이동</span><span class="scale"><b></b>약 20 m</span></div>
@@ -299,13 +297,19 @@ routing=mountRouting({model,scene,getState:()=>state,getWalker:()=>walker,notify
   walker={...walker,seatTarget:route.walkSection};yaw=Math.atan2(p[0]-q[0],p[2]-q[2]);pitch=-.12;state.touring=false;updateTourButton();drawWalkMap();syncWalker();applyVisibility();routing.update(true);renderer.domElement.focus({preventScroll:true});
 
 }});
+// Patrol is a development validation tool, never part of the public app.
+// The DEV branch and its dynamic import are removed from production builds.
+if(import.meta.env.DEV&&new URLSearchParams(location.search).get('debug')==='patrol'){
+import('./npc-view.js').then(({mountPatrol})=>{
 patrolUI=mountPatrol({model,scene,download,notify,prepare:()=>{stopTour();state.explode=0;$('#explode').value=0;$('#explode-output').value=0;if(patrolUI?.following)applyVisibility();else setFloor('all');},follow:(w,direction,lookPitch=-.08)=>{
   if(state.view!=='walk')setView('walk',{patrolCamera:true});
   const changed=walker.floor!==w.floor;walker=w;yaw=direction+npcLookYaw;pitch=THREE.MathUtils.clamp(lookPitch+npcLookPitch,-1.1,1.1);if(changed||!$('#walk-marker'))drawWalkMap();syncWalker();
 },release:()=>{setView('orbit');setFloor('all');}});
+});
+}
 yaw=Math.atan2(initialPath[0][0]-initialPath[1][0],initialPath[0][2]-initialPath[1][2]);
 perspective.position.set(265,250,305);orbit.update();applyVisibility();renderList();resize();setFloor('all');requestAnimationFrame(animate);
 $('#model-stats').textContent=`5개 층 · ${FEATURES.length}개 시설 · ${model.columnCount}개 기둥 · ${CONNECTORS.length}개 층 연결 · ${SEAT_STATS.blocks}개 좌석 구역`;$('#loading').classList.add('loaded');
 window.render_game_to_text=()=>JSON.stringify({mode:state.view,floor:walker.floor,position:{x:+walker.x.toFixed(3),y:+walker.y.toFixed(3),z:+walker.z.toFixed(3)},eyeY:+camera.position.y.toFixed(3),connector:walker.connector,seating:walker.seating??null,seatRow:walker.seatRow??null,coordinates:'metres; +X first base, +Y up, +Z behind home plate',touring:state.touring,route:routing?.textState(),npc:patrolUI?.snapshot()});
 window.advanceTime=ms=>{manualClock=true;for(let t=0;t<ms;t+=16.6667){const dt=Math.min(16.6667,ms-t)/1000;stepWalk(dt);patrolUI?.update(dt);}routing?.update(true);renderer.render(scene,camera);return window.render_game_to_text();};
-window.__INSIDE__={state,model,scene,get camera(){return camera;},get walker(){return {...walker};},renderer,get route(){return routing?.route;},patrol:patrolUI,features:FEATURES,connectors:CONNECTORS,seatBlocks:SEAT_BLOCKS,canWalk:(x,z)=>canWalk(x,z,model.colliders,walker.floor),resumeAnimation:()=>manualClock=false};
+window.__INSIDE__={state,model,scene,get camera(){return camera;},get walker(){return {...walker};},renderer,get route(){return routing?.route;},get patrol(){return patrolUI;},features:FEATURES,connectors:CONNECTORS,seatBlocks:SEAT_BLOCKS,canWalk:(x,z)=>canWalk(x,z,model.colliders,walker.floor),resumeAnimation:()=>manualClock=false};
