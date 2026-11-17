@@ -1,0 +1,17 @@
+import {mkdir,copyFile,readdir,writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const require=createRequire(import.meta.url);
+const root=fileURLToPath(new URL('../',import.meta.url));
+const out=path.join(root,'public/ocr');
+await mkdir(out,{recursive:true});
+const packageRoot=name=>path.dirname(require.resolve(name+'/package.json'));
+await copyFile(path.join(packageRoot('tesseract.js'),'dist/worker.min.js'),path.join(out,'worker.min.js'));
+const core=packageRoot('tesseract.js-core');
+for(const file of await readdir(core))if(file.endsWith('.wasm.js'))await copyFile(path.join(core,file),path.join(out,file));
+for(const lang of ['kor','eng'])await copyFile(path.join(packageRoot('@tesseract.js-data/'+lang),'4.0.0_best_int',lang+'.traineddata.gz'),path.join(out,lang+'.traineddata.gz'));
+await copyFile(path.join(packageRoot('tesseract.js'),'LICENSE.md'),path.join(out,'LICENSE-tesseract.txt'));
+await copyFile(path.join(core,'LICENSE'),path.join(out,'LICENSE-core.txt'));
+await writeFile(path.join(out,'NOTICE.txt'),`Tesseract.js 7.0.0 / Tesseract.js-core 7.0.0: Apache-2.0\nKorean and English traineddata: @tesseract.js-data packages 1.0.0, Apache-2.0\nhttps://github.com/naptha/tesseract.js\nhttps://github.com/naptha/tesseract.js-core\nhttps://github.com/naptha/tessdata\nGenerated locally from package-lock.json dependencies. Photos never leave the browser.\n`);
+console.log('Prepared local Korean/English OCR assets.');

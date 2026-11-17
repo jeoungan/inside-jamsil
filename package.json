@@ -4,14 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "vite build",
-    "build:github": "vite build --base=/inside-jamsil/",
+    "dev": "node scripts/prepare-ocr.mjs && vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "node scripts/prepare-ocr.mjs && vite build",
+    "build:github": "node scripts/prepare-ocr.mjs && vite build --base=/inside-jamsil/",
     "preview": "vite preview --host 127.0.0.1 --port 5173 --strictPort",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/kor": "1.0.0",
     "polygon-clipping": "^0.15.7",
+    "tesseract.js": "7.0.0",
     "three": "0.180.0"
   },
   "devDependencies": {

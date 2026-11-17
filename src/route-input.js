@@ -3,7 +3,7 @@ import {SEAT_BLOCK_BY_ID,resolveSeat} from './seat-data.js';
 export const UNAVAILABLE_ROUTE_MESSAGE='시스템 업데이트 예정입니다. 불편을 드려 정말 죄송합니다.';
 export function userSeatDestination(section,rowValue='',numberValue=''){
   const id=String(section).trim().replace(/(?:구역|블록|블럭)$/,'').trim();
-  if(!id)throw Error('좌석 구역을 입력해 주세요.');
+  if(!id)throw Error('좌석 구역을 입력해 주세요. 열과 번호는 구역마다 반복됩니다.');
   const block=SEAT_BLOCK_BY_ID.get(id);
   if(!block)throw Error(UNAVAILABLE_ROUTE_MESSAGE);
   const blank=v=>v==null||String(v).trim()==='';
