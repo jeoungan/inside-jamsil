@@ -28,3 +28,7 @@
 .phone-layout .ticket-scan-body{gap:12px;grid-template-columns:minmax(150px,1fr) minmax(250px,1fr)}.phone-layout .ticket-photo{min-height:190px;max-height:calc(var(--app-height) - 100px)}.phone-layout .ticket-scan-controls{gap:7px}.phone-layout .ticket-scan-controls [data-status]{font-size:11px}.phone-layout .ticket-privacy{font-size:9px}
 .phone-compact .seat-overlay{padding:4px}.phone-compact .seat-overlay>section{padding:8px}.phone-compact .seat-overlay header{margin-bottom:5px}.phone-compact .keypad-keys{gap:4px}.phone-compact .keypad-fields p{margin:0}.phone-compact .keypad-fields{gap:5px}
 @media(max-width:520px){html:not(.phone-layout) .ticket-scan-body{grid-template-columns:1fr}html:not(.phone-layout) .ticket-photo{max-height:180px;min-height:120px}}
+.ticket-photo{height:330px;padding:8px;min-height:0;position:relative}
+.ticket-photo canvas{width:100%;height:100%;object-fit:contain;display:block}.ticket-photo canvas.selecting{touch-action:none;cursor:crosshair;outline:2px solid #6d844f;outline-offset:2px}
+.ticket-crop-actions{display:flex;gap:6px}.ticket-crop-actions button{flex:1;font-size:12px;padding:6px}
+.phone-layout .ticket-photo{height:calc(var(--app-height) - 112px);min-height:140px;max-height:360px;position:sticky;top:0}
