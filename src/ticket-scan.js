@@ -1,5 +1,5 @@
 import {parseTicketSeat} from './ticket-parser.js';
-import {trapFocus} from './seat-keypad.js';
+import {trapFocus} from './dialog-focus.js';
 import {mountTicketPhoto} from './ticket-photo.js';
 
 export function mountTicketScan({button,onApply}){
