@@ -224,7 +224,6 @@ inputSurface.addEventListener('pointerup',e=>{
 inputSurface.addEventListener('pointercancel',e=>{pickPointers.delete(e.pointerId);dragging=false;down=null;});window.addEventListener('pointerup',()=>dragging=false);
 function stopTour(){state.touring=false;updateTourButton();}
 window.addEventListener('keydown',e=>{
-  if(app.inert)return;
   if(e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
   if(e.code==='Escape'&&state.view==='walk'){setView('orbit');return;}
   if(state.view==='walk'&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'].includes(e.code)){e.preventDefault();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}stopTour();keys.add(e.code);}

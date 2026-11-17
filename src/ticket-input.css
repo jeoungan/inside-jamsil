@@ -10,6 +10,12 @@
 .seat-overlay button{min-height:44px;border:1px solid #d1dac7;border-radius:9px;background:#f4f7ef;color:#354c26;padding:8px 12px;font-size:13px;touch-action:manipulation}
 .seat-overlay button:hover{background:#e9efdf}.seat-overlay button:active{background:#dce7cd}.seat-overlay button:focus-visible{outline:2px solid #57713d;outline-offset:2px}
 .seat-overlay button:disabled{opacity:.45;cursor:wait}
+.keypad-body{display:grid;grid-template-columns:minmax(140px,1fr) minmax(220px,1.4fr);gap:20px}
+.keypad-fields{display:flex;flex-direction:column;gap:7px}.keypad-fields button{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.keypad-fields button[aria-pressed="true"]{border:2px solid #687f4d;background:#eaf1df;padding:7px 11px}.keypad-fields button span{font-size:12px;color:#65725a}.keypad-fields strong{font-size:22px;font-variant-numeric:tabular-nums}
+.keypad-fields p{font-size:11px;line-height:1.65;margin:3px 0;color:#6c775f}
+.keypad-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.keypad-keys [data-key]{font-size:21px;min-height:44px;padding:4px 8px;background:#fff}
+.keypad-keys [data-key="clear"]{font-size:11px}.seat-overlay .keypad-next,.seat-overlay [data-apply],.seat-overlay [data-read]{background:#526b3c;color:white;border-color:#526b3c}.keypad-next{grid-column:1/-1}
 .ticket-scan-card{width:min(800px,100%)!important}.ticket-scan-body{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,1fr);gap:18px}
 .ticket-photo{min-height:230px;max-height:410px;display:flex;align-items:center;justify-content:center;background:#edf0e7;border:1px dashed #bbc8ad;border-radius:10px;overflow:hidden;padding:12px}
 .ticket-photo img{display:block;width:100%;height:100%;max-height:380px;object-fit:contain}.ticket-photo p{font-size:12px;line-height:1.9;text-align:center;color:#6c785f}
@@ -18,13 +24,11 @@
 .ticket-scan-controls progress{width:100%;accent-color:#526b3c}.ticket-scan-controls dl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0}.ticket-scan-controls dl>div{border:1px solid #d2dcc6;border-radius:8px;padding:9px 4px;text-align:center}.ticket-scan-controls dt{font-size:10px;color:#748365}.ticket-scan-controls dd{font-size:18px;font-weight:600;margin:4px 0 0}.ticket-scan-controls dd:empty{display:none}
 .phone-layout .seat-entry-heading{margin:0;font-size:11px}.phone-layout .seat-entry-heading button{min-height:44px;padding:8px 10px}.phone-layout #seat-section-help{font-size:11px;margin:-4px 0 0}.phone-layout #ticket-input-status{font-size:11px}
 .phone-layout .seat-overlay{position:absolute;padding:8px}.phone-layout .seat-overlay>section{padding:12px;border-radius:12px}.phone-layout .seat-overlay header{margin-bottom:8px}.phone-layout .seat-overlay h2{font-size:17px}.phone-layout .seat-overlay header small{display:none}
+.phone-layout .keypad-body{gap:14px;grid-template-columns:minmax(145px,1fr) minmax(230px,1.5fr)}.phone-layout .keypad-fields p{font-size:10px}.phone-layout .keypad-fields strong{font-size:20px}
 .phone-layout .ticket-scan-body{gap:12px;grid-template-columns:minmax(150px,1fr) minmax(250px,1fr)}.phone-layout .ticket-photo{min-height:190px;max-height:calc(var(--app-height) - 100px)}.phone-layout .ticket-scan-controls{gap:7px}.phone-layout .ticket-scan-controls [data-status]{font-size:11px}.phone-layout .ticket-privacy{font-size:9px}
+.phone-compact .seat-overlay{padding:4px}.phone-compact .seat-overlay>section{padding:8px}.phone-compact .seat-overlay header{margin-bottom:5px}.phone-compact .keypad-keys{gap:4px}.phone-compact .keypad-fields p{margin:0}.phone-compact .keypad-fields{gap:5px}
 @media(max-width:520px){html:not(.phone-layout) .ticket-scan-body{grid-template-columns:1fr}html:not(.phone-layout) .ticket-photo{max-height:180px;min-height:120px}}
 .ticket-photo{height:330px;padding:8px;min-height:0;position:relative}
 .ticket-photo canvas{width:100%;height:100%;object-fit:contain;display:block}.ticket-photo canvas.selecting{touch-action:none;cursor:crosshair;outline:2px solid #6d844f;outline-offset:2px}
 .ticket-crop-actions{display:flex;gap:6px}.ticket-crop-actions button{flex:1;font-size:12px;padding:6px}
 .phone-layout .ticket-photo{height:calc(var(--app-height) - 112px);min-height:140px;max-height:360px;position:sticky;top:0}
-.seat-overlay [data-apply],.seat-overlay [data-read]{background:#526b3c;color:white;border-color:#526b3c}
-.phone-compact .seat-overlay{padding:4px}.phone-compact .seat-overlay>section{padding:8px}.phone-compact .seat-overlay header{margin-bottom:5px}
-.phone-device .seat-input{grid-template-columns:1fr}.phone-device .seat-input>*{grid-column:1/-1}
-.phone-device .seat-address{display:grid;grid-template-columns:1fr 1fr;gap:8px}
