@@ -224,6 +224,7 @@ inputSurface.addEventListener('pointerup',e=>{
 inputSurface.addEventListener('pointercancel',e=>{pickPointers.delete(e.pointerId);dragging=false;down=null;});window.addEventListener('pointerup',()=>dragging=false);
 function stopTour(){state.touring=false;updateTourButton();}
 window.addEventListener('keydown',e=>{
+  if(app.inert)return;
   if(e.target.matches?.('input,textarea,select,button')||$('#source-dialog').open)return;
   if(e.code==='Escape'&&state.view==='walk'){setView('orbit');return;}
   if(state.view==='walk'&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'].includes(e.code)){e.preventDefault();if(patrolUI?.following){patrolUI.pause();patrolUI.detach();}stopTour();keys.add(e.code);}
@@ -270,7 +271,7 @@ $('#export-glb').onclick=async()=>{
     const result=await new GLTFExporter().parseAsync(clone,{binary:true,onlyVisible:false});download(new Blob([result],{type:'model/gltf-binary'}),'jamsil-graybox.glb');notify('전체 모델을 GLB로 저장했습니다. Blender 등에서 열 수 있어요.');
   }catch(error){console.error(error);notify('모델 저장에 실패했습니다. 다시 시도해 주세요.');}finally{btn.disabled=false;btn.innerHTML=icon('down')+'<span>3D 모델 저장</span>';}
 };
-function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;renderer.setSize(w,h);scene.userData.renderDirty=true;perspective.aspect=w/h;perspective.updateProjectionMatrix();const aspect=w/h;ortho.left=-170*aspect;ortho.right=170*aspect;ortho.top=170;ortho.bottom=-170;ortho.updateProjectionMatrix();}
+function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;renderer.setSize(w,h);scene.userData.renderDirty=true;perspective.aspect=w/h;perspective.zoom=mobileOrientation.phone&&state.view==='orbit'?1.55:1;perspective.updateProjectionMatrix();const aspect=w/h;ortho.left=-170*aspect;ortho.right=170*aspect;ortho.top=170;ortho.bottom=-170;ortho.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(viewport);
 const projected=new THREE.Vector3();let frame=0,last=performance.now(),lastRender=0,lastPose='';
 function animate(now){

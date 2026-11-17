@@ -1,119 +1,74 @@
 .phone-device,.phone-device body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
-.phone-device #app{position:fixed;left:var(--display-left,0px);top:var(--display-top,0px);width:var(--app-width,100vw);height:var(--app-height,100dvh);transform-origin:0 0;min-height:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:hidden}
+.phone-device #app{position:fixed;left:var(--display-left,0);top:var(--display-top,0);width:var(--app-width,100vw);height:var(--app-height,100dvh);min-height:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:hidden}
+.phone-portrait #app{visibility:hidden}
+#landscape-entry{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:28px;background:#f3f4ee;color:#33452e;text-align:center;font-family:inherit}
+.landscape-entry-card{width:min(330px,100%)}.entry-brand{font-size:12px;letter-spacing:.05em;color:#7c8972}
+.landscape-entry-card>svg{display:block;width:96px;height:72px;margin:34px auto 24px;color:#6c815b}
+.landscape-entry-card h1{font-size:24px;letter-spacing:-1px;margin:0 0 14px;font-weight:600}.landscape-entry-card p{font-size:14px;line-height:1.8;color:#748168;margin:0 0 24px}
+#landscape-start{width:100%;min-height:52px;border-radius:12px;background:#425b36;color:#fff;font-size:15px;font-weight:600;padding:14px}
+#landscape-start:disabled{opacity:.55}#landscape-entry-status{margin:18px 0 0;font-size:12px}
 .phone-layout dialog[open]{position:fixed;inset:auto;left:var(--display-center-x);top:var(--display-center-y);margin:0;transform:translate(-50%,-50%);width:min(660px,calc(var(--app-width) - 32px));max-width:none;max-height:calc(var(--app-height) - 24px);padding:18px 22px;overscroll-behavior:contain}
-.phone-layout .dialog-head .icon-btn{width:44px;height:44px}
-.phone-layout .topbar{height:48px;min-height:48px;padding:0 12px;gap:12px}
-.phone-layout .brand{font-size:23px;gap:7px}.phone-layout .brand>svg{width:22px;height:22px}
-.phone-layout .header-divider{height:22px;margin:0}.phone-layout .project>span,.phone-layout .version{display:none}
-.phone-layout .project strong{font-size:12px}.phone-layout .top-actions{gap:6px}
-.phone-layout .top-actions .btn{width:44px;min-width:44px;height:44px;padding:0}.phone-layout .top-actions .btn span{display:none}
-.phone-layout .workspace,.phone-layout .workspace:has(.route-mode){--phone-rail:58px;--phone-sheet:clamp(204px,calc(var(--app-width) * .28),272px);display:block;position:relative;min-height:0;overflow:hidden}
-.phone-layout .sidebar{position:absolute;inset:0 auto 0 0;width:var(--phone-rail);height:auto;padding:6px;border:0;border-right:1px solid #dce1d4;overflow:hidden}
-.phone-layout .sidebar>:not(.floor-list){display:none}
-.phone-layout .floor-list{display:flex;flex-direction:column;gap:4px;margin:0;height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
-.phone-layout .floor-button,.phone-layout .floor-button[data-floor="all"],.phone-layout .floor-button[data-floor="2.5F"]{flex:0 0 44px;min-width:44px;width:44px;min-height:44px;margin:0;padding:4px;justify-content:center}
-.phone-layout .floor-button>span:not(.floor-number),.phone-layout .floor-button>svg,.phone-layout .floor-button>b{display:none}
-.phone-layout .floor-button[data-floor="all"]:after{content:'전체';font-size:11px}
+.phone-layout .topbar{height:48px;min-height:48px;padding:0 14px;gap:12px}.phone-layout .brand{font-size:23px;gap:7px}.phone-layout .brand>svg{width:22px;height:22px}
+.phone-layout .header-divider{height:22px;margin:0}.phone-layout .project>span,.phone-layout .version{display:none}.phone-layout .project strong{font-size:12px}
+.phone-layout .top-actions{gap:6px}.phone-layout .top-actions .btn{width:44px;min-width:44px;height:44px;padding:0}.phone-layout .top-actions .btn span{display:none}
+.phone-device #landscape-fullscreen{width:44px;padding:0}.phone-device #landscape-fullscreen span{display:none}
+/* Keep the portrait layout's full-width floor bar and bottom sheet on a real landscape screen. */
+.phone-layout .workspace,.phone-layout .workspace:has(.route-mode){--floor-height:48px;--sheet-height:50px;display:block;position:relative;min-height:0;overflow:hidden}
+.phone-layout .sidebar{position:absolute;inset:0 0 auto;width:100%;height:var(--floor-height);padding:2px 12px;border:0;border-bottom:1px solid #dfe5d8;background:#f8f9f3;overflow:hidden}
+.phone-layout .sidebar>:not(.floor-list){display:none}.phone-layout .floor-list{display:flex;flex-direction:row;height:44px;gap:6px;margin:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.phone-layout .floor-button,.phone-layout .floor-button[data-floor="all"],.phone-layout .floor-button[data-floor="2.5F"]{flex:1;min-width:44px;width:auto;height:44px;min-height:44px;margin:0;padding:6px;justify-content:center;border-radius:9px}
+.phone-layout .floor-button>span:not(.floor-number),.phone-layout .floor-button>svg,.phone-layout .floor-button>b{display:none}.phone-layout .floor-button[data-floor="all"]:after{content:'전체';font-size:12px}
 .phone-layout .floor-button .floor-number,.phone-layout .floor-button[data-floor="3F"] .floor-number,.phone-layout .floor-button[data-floor="2.5F"] .floor-number{font-size:15px;width:auto}
-.phone-layout .viewport{position:absolute;inset:0 0 0 var(--phone-rail);width:auto;min-height:0}
-.phone-layout .workspace:has(.walking) .sidebar{display:none}.phone-layout .workspace:has(.walking) .viewport{top:0;left:0}
-.phone-layout .workspace:has(.panel-open) .viewport{right:calc(var(--phone-sheet) + 16px)}
+.phone-layout .viewport{position:absolute;inset:var(--floor-height) 0 var(--sheet-height);width:auto;min-height:0}
+.phone-layout .workspace:has(.panel-open){--sheet-height:clamp(180px,48vh,214px)}
+.phone-layout .workspace:has(.walking) .sidebar{display:none}.phone-layout .workspace:has(.walking) .viewport{top:0}
 .phone-layout .view-title,.phone-layout .compass,.phone-layout .app-footer,.phone-layout .canvas-footer{display:none}
-.phone-layout .view-modes,.phone-layout .walking .view-modes,.phone-layout .npc-following .view-modes{top:8px;left:10px;right:10px;max-width:none;padding:3px;border-radius:12px;justify-content:center}
-.phone-layout .view-modes button,.phone-layout .walking .view-modes button{flex:1;min-width:0;min-height:44px;padding:8px 3px;justify-content:center;gap:4px}
-.phone-layout .view-modes button span,.phone-layout .walking .view-modes span{font-size:11px;white-space:nowrap}
-.phone-layout .view-modes svg,.phone-layout .walking .view-modes svg{width:14px;height:14px}
-.phone-layout .inspector,.phone-layout .inspector.route-mode,.phone-layout .inspector:not(.route-mode){position:absolute;z-index:20;inset:auto 8px 8px auto;width:var(--phone-sheet);max-width:var(--phone-sheet);height:64px;max-height:calc(100% - 16px);padding-bottom:0;display:flex;flex-direction:column;border:1px solid #dce1d5;border-radius:16px;overflow:hidden}
-.phone-layout .inspector.panel-open{top:8px;height:auto}
-.phone-layout .panel-toggle{display:flex;height:56px;min-height:56px;padding:10px 14px;border-radius:16px;flex-shrink:0}
+.phone-layout .view-modes,.phone-layout .walking .view-modes,.phone-layout .npc-following .view-modes{top:8px;left:12px;right:auto;width:min(330px,55%);max-width:none;padding:3px;border-radius:12px;justify-content:center}
+.phone-layout .view-modes button,.phone-layout .walking .view-modes button{flex:1;min-width:0;min-height:38px;padding:6px;justify-content:center;gap:5px}
+.phone-layout .view-modes button span,.phone-layout .walking .view-modes span{font-size:11px;white-space:nowrap}.phone-layout .view-modes svg{width:15px;height:15px}
+.phone-layout .bottom-tools{left:auto;right:12px;top:8px;bottom:auto;transform:none;flex-direction:row;justify-content:flex-end;gap:6px}
+.phone-layout .explode-control{min-width:0;width:146px;min-height:44px;padding:7px 9px;gap:6px}.phone-layout .explode-control>span{font-size:10px}.phone-layout .explode-control input{width:55px;min-width:24px;flex:1}
+.phone-layout .bottom-tools .btn{width:44px;min-width:44px;min-height:44px;padding:8px}.phone-layout .bottom-tools .btn span{display:none}
+.phone-layout .zoom-controls{right:12px;top:auto;bottom:10px;flex-direction:row;border-radius:11px}.phone-layout .zoom-controls button{width:40px;height:40px}.phone-layout .zoom-controls button+button{border-top:0;border-left:1px solid #e2e7d9}
+.phone-layout .inspector,.phone-layout .inspector.route-mode,.phone-layout .inspector:not(.route-mode){position:absolute;z-index:20;inset:auto 0 0;width:100%;max-width:100%;height:var(--sheet-height);max-height:calc(100% - 8px);padding:0;display:flex;flex-direction:column;border:1px solid #dce1d5;border-bottom:0;border-radius:18px 18px 0 0;background:#fcfcf8;overflow:hidden;transform:none;box-shadow:0 -4px 24px #2632200b}
+.phone-layout .panel-toggle,.phone-layout .inspector:not(.panel-open) .panel-toggle{position:relative;inset:auto;width:100%;height:48px;min-height:48px;padding:8px 18px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;gap:12px;flex-shrink:0}
+.phone-layout .sheet-grip{display:block;top:5px;width:32px;height:3px;left:calc(50% - 16px)}
+.phone-layout .panel-toggle>span:not(.sheet-grip){display:flex;align-items:center;gap:12px;min-width:0}.phone-layout .panel-toggle strong{font-size:14px;writing-mode:horizontal-tb;letter-spacing:0;white-space:nowrap}.phone-layout .panel-toggle small{display:block;font-size:11px;margin:0;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.phone-layout .panel-toggle b{display:block;font-size:20px;margin:0}
 .phone-layout .inspector:not(.panel-open)>:not(.panel-toggle){display:none!important}
-.phone-layout .inspector:not(.panel-open) .panel-toggle{height:62px;min-height:62px}
-.phone-layout .sheet-grip{display:none}.phone-layout .panel-toggle strong{font-size:14px}.phone-layout .panel-toggle small{font-size:10px;margin-top:3px}
-.phone-layout .inspector-tabs{padding:0 10px 6px;gap:4px}.phone-layout .inspector-tabs button{min-height:44px;font-size:12px;padding:8px}
-.phone-layout .inspector.panel-open .panel-toggle{position:absolute;right:4px;top:4px;width:44px;height:44px;min-height:44px;padding:0;justify-content:center;z-index:2;border-radius:10px}
-.phone-layout .inspector.panel-open .panel-toggle>span{display:none}.phone-layout .inspector.panel-open .panel-toggle b{margin:0}
-.phone-layout .inspector.panel-open .inspector-tabs{padding:4px 52px 6px 8px}
-.phone-layout .inspector.route-mode .routing{padding:10px 12px 12px;min-height:0;flex:1;overflow:auto;overscroll-behavior:contain}
-.phone-layout .destination-modes{margin:0 0 10px}.phone-layout .destination-modes button{min-height:44px;font-size:11px;padding:7px 3px}
-.phone-layout .route-heading{display:none}.phone-layout #route-form{display:flex;flex-direction:column;gap:10px}.phone-layout #route-form input,.phone-layout #route-form select{font-size:16px;min-height:44px}.phone-layout .route-origin{padding:8px;gap:8px}.phone-layout .route-origin small{font-size:10px}
-.phone-layout .route-actions{bottom:-12px;padding:8px 0 10px}.phone-layout .route-actions .btn{min-height:44px;padding:10px;font-size:12px}
-.phone-layout .seat-input{grid-template-columns:1fr;gap:10px}.phone-layout .seat-input>*{grid-column:1/-1}
-.phone-layout .seat-tools{gap:8px}.phone-layout .route-walk-actions{grid-template-columns:1fr}
-.phone-layout .inspector:not(.route-mode) .inspector-header{display:none}.phone-layout .inspector:not(.route-mode) .search-box{margin:0 12px;flex-shrink:0;min-height:44px}
-.phone-layout .filter-chips{display:flex;padding:6px 10px;flex-wrap:nowrap;overflow-x:auto;flex-shrink:0}
-.phone-layout .inspector #feature-list{flex:1;min-height:0;padding:4px 10px;overflow-y:auto;display:block}
-.phone-layout .feature-row{width:100%;max-height:none;min-height:57px}.phone-layout .feature-row strong{font-size:12px}.phone-layout .search-box input{font-size:16px}.phone-layout .selection .focus-btn,.phone-layout .selection .source-ref,.phone-layout .selection .coordinate-row{display:flex}.phone-layout .selection-top button{width:44px;height:44px}.phone-layout .selection:has(.selection-empty){display:none}
+.phone-layout .inspector.panel-open .panel-toggle{width:calc(100% - 230px);min-height:44px;height:44px;border-radius:18px 0 0 0}
+.phone-layout .inspector.panel-open .inspector-tabs{position:absolute;inset:5px 12px auto auto;width:206px;height:36px;padding:0;gap:4px;border:0;z-index:2}
+.phone-layout .inspector-tabs button{min-height:36px;padding:6px;font-size:11px;border-radius:8px}
+.phone-layout .inspector.route-mode .routing{padding:6px 14px 12px;min-height:0;flex:1;overflow:auto;overscroll-behavior:contain}
+.phone-layout #route-form{display:grid;grid-template-columns:minmax(140px,.9fr) minmax(260px,2.1fr) 98px;gap:8px 14px;align-items:end}
+.phone-layout .route-origin{grid-column:1;grid-row:2;align-self:start;padding:0;border:0;margin:0;background:none}.phone-layout .route-origin>label{width:100%}.phone-layout #route-origin-location{display:none}
+.phone-layout .destination-modes{grid-column:1;grid-row:1;align-self:center;margin:0;min-height:34px}.phone-layout .destination-modes button{min-height:34px;font-size:11px;padding:6px}
+.phone-layout #route-form label{font-size:11px;margin:0}.phone-layout #route-form input,.phone-layout #route-form select{font-size:16px;min-height:42px;height:42px;margin-top:4px;padding:8px}
+.phone-layout #route-form .seat-input{grid-column:2;grid-row:1/3;display:grid;grid-template-columns:minmax(90px,.85fr) minmax(150px,1.4fr);gap:7px 10px;align-items:end}
+.phone-layout #route-form .seat-input>.seat-entry-heading{grid-column:1/-1;grid-row:1;min-height:34px;margin:0;justify-content:flex-end}
+.phone-layout .seat-entry-heading>span{margin-right:auto}.phone-layout #ticket-scan-open{min-height:34px;padding:6px 10px}
+.phone-layout #route-form .seat-input>label{grid-column:1;grid-row:2}.phone-layout #route-form .seat-input>.seat-address{grid-column:2;grid-row:2;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.phone-layout #route-form .seat-input>.seat-address>label{grid-column:auto}
+.phone-layout #route-form #seat-section-help,.phone-layout #route-form #ticket-input-status{grid-column:1/-1;margin:0;font-size:10px;line-height:1.5}
+.phone-layout #route-form .route-actions{grid-column:3;grid-row:2;position:static;padding:0;margin:18px 0 0;background:none;align-self:start}.phone-layout .route-actions .btn{min-height:42px;width:100%;padding:8px;font-size:12px}
+.phone-layout #route-form>label{grid-column:2;grid-row:1/3}.phone-layout #route-search{margin-bottom:6px}
+.phone-layout #route-result{font-size:11px;padding:6px 0;line-height:1.5}.phone-layout #route-result:empty{display:none}.phone-layout #route-result strong{font-size:13px}
+.phone-layout .inspector:not(.route-mode) .inspector-header{display:none}.phone-layout .inspector:not(.route-mode) .search-box{margin:4px 14px;min-height:38px;flex-shrink:0}.phone-layout .search-box input{font-size:16px}
+.phone-layout .filter-chips{display:flex;flex-wrap:nowrap;padding:4px 14px;overflow-x:auto;flex-shrink:0}.phone-layout .filter-chips button{min-height:34px;padding:6px 10px;font-size:11px}
+.phone-layout .inspector #feature-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;flex:1;min-height:0;padding:4px 14px;overflow:auto}.phone-layout .feature-row{width:100%;min-height:50px;max-height:none;padding:8px}.phone-layout .feature-row strong{font-size:12px}
 .phone-layout .inspector:not(.route-mode):has(.selection h3) #feature-list,.phone-layout .inspector:not(.route-mode):has(.selection h3) .filter-chips{display:none}
-.phone-layout .inspector:has(.selection h3) .selection{display:block;flex:1;max-height:none;min-height:0;overflow:auto;padding:8px 12px}
-.phone-layout .bottom-tools{left:10px;right:64px;bottom:12px;transform:none;flex-direction:row;gap:6px;justify-content:flex-start}
-.phone-layout .explode-control{min-width:0;flex:1;max-width:178px;min-height:44px;padding:7px 8px;gap:6px}
-.phone-layout .explode-control>span{font-size:0;gap:0}.phone-layout .explode-control svg{width:16px;height:16px}
-.phone-layout .explode-control input{flex:1;width:50px;min-width:28px;max-width:90px}
-.phone-layout .bottom-tools .btn{width:44px;min-width:44px;min-height:44px;padding:8px}
-.phone-layout .bottom-tools .btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.phone-layout .zoom-controls{right:10px;bottom:84px}.phone-layout .zoom-controls button{width:44px;height:44px}
-.phone-layout .workspace:has(.panel-open) .zoom-controls{bottom:12px}
-.phone-layout .patrol-panel{left:10px;bottom:66px;width:220px;max-width:calc(100% - 76px);max-height:calc(100% - 132px);padding:8px 10px;overflow:auto}
-.phone-layout .patrol-panel summary{min-height:28px;align-items:center;font-size:11px}.phone-layout .patrol-actions{flex-wrap:wrap}
-.phone-layout .workspace:has(.panel-open) .patrol-panel{display:none}
-.phone-layout .patrol-actions button{min-height:44px;font-size:11px}.phone-layout .npc-following .patrol-panel{left:100px;bottom:84px;max-width:calc(100% - 112px)}
-.phone-layout #route-guidance,.phone-layout .walking #route-guidance{left:10px;right:10px;top:66px;max-width:none;max-height:calc(100% - 168px);overflow:auto;pointer-events:auto;padding:9px 11px}
-.phone-layout #route-guidance strong{font-size:13px;line-height:1.45}.phone-layout #route-guidance small{font-size:11px;line-height:1.5}
-.phone-layout #route-guidance>span,.phone-layout .walk-location .eyebrow,.phone-layout .walk-location small{display:none}
-.phone-layout .walk-location,.phone-layout .npc-following .walk-location,.phone-layout .walking:has(#route-guidance:not([hidden])) .walk-location{left:10px;right:auto;top:auto;bottom:12px;width:80px;padding:6px}
-.phone-layout #walk-map,.phone-layout .npc-following #walk-map{height:48px;margin-top:4px}.phone-layout .walk-location strong{font-size:11px;margin:0}
-.phone-layout .walk-help{display:none}.phone-layout #toast{left:104px;right:10px;bottom:84px;max-width:none;transform:none;font-size:11px;line-height:1.5}
-.phone-layout .workspace:has(.panel-open) #toast{left:10px;bottom:12px}
-.phone-keyboard .topbar,.phone-keyboard .sidebar,.phone-keyboard .viewport{display:none}.phone-keyboard .inspector.panel-open{inset:4px;width:calc(100% - 8px);max-width:none;max-height:calc(100% - 8px)}.phone-keyboard .inspector.panel-open .panel-toggle,.phone-keyboard .inspector.panel-open .inspector-tabs{display:none!important}
-.phone-keyboard .inspector.route-mode .routing{padding:6px 10px}.phone-keyboard .route-actions{bottom:-6px}
-.phone-compact .view-modes button svg{display:none}.phone-compact .zoom-controls{flex-direction:row;bottom:84px}.phone-compact .zoom-controls button+button{border-top:0;border-left:1px solid #e2e7d9}.phone-compact .workspace:has(.panel-open) .zoom-controls{bottom:62px}.phone-compact .patrol-panel{max-width:calc(100% - 164px)}
-
-/* Keep the route in view; a destination picker is only expanded on demand. */
-.phone-layout .inspector:not(.panel-open){width:168px;max-width:calc(100% - 20px);height:46px;border-radius:12px}
-.phone-layout .inspector:not(.panel-open) .panel-toggle{height:44px;min-height:44px;padding:5px 10px;gap:6px;border-radius:12px}
-.phone-layout .panel-toggle>span:not(.sheet-grip){min-width:0;overflow:hidden}
-.phone-layout .panel-toggle strong{font-size:12px}.phone-layout .panel-toggle small{font-size:10px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:126px}
-.phone-layout .inspector.route-mode .routing{padding:6px 10px 8px}
-.phone-layout #route-form{gap:6px}.phone-layout .destination-modes{margin-bottom:6px}
-.phone-layout .route-origin{padding:4px 6px}.phone-layout .route-origin strong{font-size:11px}.phone-layout .route-origin small{font-size:10px}
-.phone-layout .route-note{font-size:10px;line-height:1.4;margin:6px 0}
-.phone-layout .amenity-card{padding:6px 8px;gap:3px}.phone-layout .amenity-card small{font-size:9px}
-.phone-layout #app:has(.walking) .topbar{display:none}
-.phone-layout .walking .view-modes{left:8px;right:auto;top:8px;width:auto;gap:2px}
-.phone-layout .walking .view-modes button{flex:0 0 44px;width:44px;min-height:44px;padding:8px}
-.phone-layout .walking .view-modes button span{display:none}.phone-layout .walking .view-modes button svg{display:block;width:18px;height:18px}
-.phone-layout .walking #route-guidance{top:8px;left:216px;right:10px;max-height:72px;padding:6px 9px;border-radius:10px}
-.phone-layout .walking #route-guidance strong{font-size:12px;line-height:1.35}.phone-layout .walking #route-guidance small{font-size:10px;line-height:1.35}
-.phone-layout .workspace:has(.panel-open) .walking #route-guidance{display:none}
-.phone-layout .walking #toast{bottom:66px;font-size:10px;max-width:360px;pointer-events:none}
-.phone-layout .walking .walk-location{bottom:8px;width:68px}.phone-layout .walking #walk-map{height:38px}
-#walk-touch-controls{display:none;position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:6}
-@media(pointer:coarse){.walking:not(.npc-following) #walk-touch-controls{display:block}}
-.phone-layout .walking:not(.npc-following) #walk-touch-controls{display:block}
-.touch-half-hint{position:absolute;bottom:16px;transform:translateX(-50%);padding:5px 9px;border-radius:20px;background:rgba(25,34,26,.55);color:#fff;font-size:11px;white-space:nowrap;transition:opacity .15s}
-.touch-left-hint{left:25%}.touch-right-hint{left:75%}.touch-active .touch-half-hint{opacity:.25}
-#move-stick{position:absolute;width:96px;height:96px;margin:-48px;border:1px solid #fff8;border-radius:50%;background:#13281924;box-shadow:0 0 0 4px #15281b10}
-#move-stick i{position:absolute;left:32px;top:32px;width:32px;height:32px;border-radius:50%;background:#f7fff2c9;box-shadow:0 1px 8px #172b1855}
-#look-stick{position:absolute;width:28px;height:28px;margin:-14px;border:1px solid #fff9;border-radius:50%;background:#13281918}
-
-/* A small index tab stays attached to the side of the landscape surface. */
-.phone-layout .inspector:not(.panel-open){inset:50% 0 auto auto;transform:translateY(-50%);width:44px;max-width:44px;height:88px;border-radius:12px 0 0 12px;border-right:0}
-.phone-layout .inspector:not(.panel-open) .panel-toggle{width:44px;height:86px;min-height:86px;padding:10px 8px;justify-content:center;border-radius:12px 0 0 12px}
-.phone-layout .inspector:not(.panel-open) .panel-toggle strong{writing-mode:vertical-rl;text-orientation:upright;font-size:12px;letter-spacing:2px;line-height:1.3}
-.phone-layout .inspector:not(.panel-open) .panel-toggle small,.phone-layout .inspector:not(.panel-open) .panel-toggle b{display:none}
-.phone-layout .inspector.panel-open{transform:none}
-.phone-layout .destination-modes{margin:0;flex-shrink:0}
-.phone-layout .route-origin{padding:0;margin:0;border:0;background:none}
-.phone-layout .route-origin>label{width:100%}
-.phone-layout #route-origin-location{display:none}
-.phone-layout #route-form input,.phone-layout #route-form select{margin-top:4px}
-.phone-layout .seat-address{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.phone-layout .seat-input .seat-address>label{grid-column:auto}
-.phone-layout #route-result{font-size:12px;padding:6px 0;line-height:1.6}
-.phone-layout #route-result strong{font-size:13px}
-.phone-layout .route-actions{padding:6px 0;margin:0;bottom:-8px}
-.phone-layout .walking .bottom-tools{display:none}
-.phone-device #landscape-fullscreen{width:auto;min-width:44px;padding:0 10px;gap:6px;white-space:nowrap;font-size:11px}
-.phone-device #landscape-fullscreen span{display:inline}
-.phone-device:not(.phone-layout) .header-divider,.phone-device:not(.phone-layout) .project{display:none}
+.phone-layout .selection:has(.selection-empty){display:none}.phone-layout .inspector:has(.selection h3) .selection{display:block;flex:1;max-height:none;overflow:auto;padding:8px 14px}.phone-layout .selection .focus-btn,.phone-layout .selection .source-ref,.phone-layout .selection .coordinate-row{display:flex}
+.phone-layout #route-guidance,.phone-layout .walking #route-guidance{top:8px;left:360px;right:12px;max-width:none;max-height:76px;padding:8px 10px;overflow:auto;pointer-events:auto;border-radius:10px}
+.phone-layout #route-guidance>span,.phone-layout .walk-location .eyebrow,.phone-layout .walk-location small{display:none}.phone-layout #route-guidance strong{font-size:12px;line-height:1.4}.phone-layout #route-guidance small{font-size:10px;line-height:1.4}
+.phone-layout .workspace:has(.panel-open) .view-modes,.phone-layout .workspace:has(.panel-open) .bottom-tools,.phone-layout .workspace:has(.panel-open) .zoom-controls,.phone-layout .workspace:has(.panel-open) #route-guidance{display:none}
+.phone-layout .workspace:has(.panel-open) #labels{display:none}
+@media(max-width:640px){.phone-layout .view-modes{width:auto}.phone-layout .view-modes button{flex:0 0 44px;width:44px;height:40px}.phone-layout .view-modes button span{display:none}.phone-layout .view-modes svg{width:18px;height:18px}}
+.phone-layout .walking .bottom-tools{display:none}.phone-layout .walk-help{display:none}.phone-layout .walk-location,.phone-layout .walking:has(#route-guidance:not([hidden])) .walk-location{left:12px;right:auto;top:auto;bottom:10px;width:70px;padding:6px}.phone-layout #walk-map{height:38px;margin-top:3px}.phone-layout .walk-location strong{font-size:10px;margin:0}
+.phone-layout #app:has(.walking) .topbar{display:none}.phone-layout #toast{left:94px;right:12px;bottom:12px;max-width:none;transform:none;font-size:11px;pointer-events:none}
+.phone-keyboard .topbar,.phone-keyboard .sidebar,.phone-keyboard .viewport{display:none}.phone-keyboard .inspector.panel-open{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);max-height:none;border-radius:12px}.phone-keyboard .inspector.panel-open .panel-toggle,.phone-keyboard .inspector.panel-open .inspector-tabs{display:none!important}.phone-keyboard .inspector.route-mode .routing{padding:8px 12px}
+.phone-compact .topbar{height:44px;min-height:44px}.phone-compact .workspace{--floor-height:44px;--sheet-height:46px}.phone-compact .workspace:has(.panel-open){--sheet-height:180px}.phone-compact .sidebar{padding:0 10px}.phone-compact .panel-toggle,.phone-compact .inspector:not(.panel-open) .panel-toggle{min-height:44px;height:44px}
+.phone-compact .view-modes{width:300px}.phone-compact .view-modes button{min-height:36px}.phone-compact .bottom-tools .explode-control{width:116px}.phone-compact .explode-control>span{font-size:0}.phone-compact .explode-control svg{width:15px}
+.phone-compact #route-form{grid-template-columns:minmax(120px,.85fr) minmax(220px,1.8fr) 82px;gap:8px}.phone-compact #route-form .seat-input{grid-template-columns:minmax(75px,.8fr) minmax(135px,1.4fr);gap:7px}.phone-compact .panel-toggle small{max-width:160px}.phone-compact #route-guidance{left:324px}
 #landscape-status{position:absolute;z-index:1100;left:12px;right:12px;top:60px;pointer-events:none;width:fit-content;max-width:calc(100% - 24px);margin:0 auto;padding:12px 16px;background:#fbfcf7;border:1px solid #cbd5be;border-radius:10px;font-size:12px;line-height:1.6;color:#465d32;box-shadow:0 4px 24px #12200c25}
+#walk-touch-controls{display:none;position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:6}@media(pointer:coarse){.walking:not(.npc-following) #walk-touch-controls{display:block}}.phone-layout .walking:not(.npc-following) #walk-touch-controls{display:block}
+.touch-half-hint{position:absolute;bottom:16px;transform:translateX(-50%);padding:5px 9px;border-radius:20px;background:rgba(25,34,26,.55);color:#fff;font-size:11px;white-space:nowrap;transition:opacity .15s}.touch-left-hint{left:25%}.touch-right-hint{left:75%}.touch-active .touch-half-hint{opacity:.25}
+#move-stick{position:absolute;width:96px;height:96px;margin:-48px;border:1px solid #fff8;border-radius:50%;background:#13281924;box-shadow:0 0 0 4px #15281b10}#move-stick i{position:absolute;left:32px;top:32px;width:32px;height:32px;border-radius:50%;background:#f7fff2c9;box-shadow:0 1px 8px #172b1855}#look-stick{position:absolute;width:28px;height:28px;margin:-14px;border:1px solid #fff9;border-radius:50%;background:#13281918}
